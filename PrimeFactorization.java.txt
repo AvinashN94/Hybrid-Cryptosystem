@@ -1,0 +1,86 @@
+package cryptoattack;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.math.BigInteger;
+
+public class PrimeFactorization {
+
+    /* returns true if parameter n is a prime number, false if composite or neither */
+    public static boolean isBigPrime(BigInteger n) {
+        if (n.compareTo(new BigInteger("2")) < 0) return false;
+        else if (n.compareTo(new BigInteger("2")) == 0) return true;
+        for (BigInteger i = new BigInteger("2"); i.compareTo(n.divide(new BigInteger("2"))) < 0; i = i.add(BigInteger.ONE))
+            if (n.mod(i).equals(BigInteger.ZERO))
+                return false;
+        return true;
+    }
+    
+    /* Returns the largest prime factor of parameter n as BigInteger.
+       This is not my method. Someone else developed this code. */
+    public static BigInteger findLargestBigPrimeFactor(BigInteger n) {
+        BigInteger primeFactor = BigInteger.ONE;
+        System.out.println("Inside  largestbigprime factor method..");
+        for (BigInteger i = new BigInteger("9999999999999999999999999999999999999999999999999999999999999999999999999"); i.compareTo(n.divide(i)) <= 0; ) {
+            if (n.mod(i).longValue() == 0) {
+                primeFactor = i;
+                n = n.divide(i);
+            } else {
+                i = i.subtract(new BigInteger("2"));
+                
+            }
+        }
+        System.out.println("Out of largest for...");
+        if (primeFactor.compareTo(n) < 0) {
+            primeFactor = n;
+        }
+        return primeFactor;
+    }
+    
+    /* returns smallest factor of parameter n as a BigInteger */
+    public static BigInteger findBigSmallestFactor(BigInteger n) {
+        if (isBigPrime(n)) { // it's prime, so it has no factors
+            return n;
+        }
+        BigInteger factor = new BigInteger("2"); // start at lowest possible factor
+        while (!n.mod(factor).equals(BigInteger.ZERO)) { // go until factor is a factor
+            factor = factor.add(BigInteger.ONE); // test the next factor
+        }
+        return factor;
+    }
+
+    /* reduces the parameter n into a product of only prime numbers
+       and returns a list of those prime number factors as BigIntegers */
+    public static ArrayList<BigInteger> bigPrimeFactorization(BigInteger n) {
+
+        ArrayList<BigInteger> primes = new ArrayList<BigInteger>(); // list of prime factors in the prime factorization
+        
+        // get the largest prime factor, add it to the list and divide it out of the number to reduce time
+        BigInteger largestPrimeFactor = findLargestBigPrimeFactor(n);
+        primes.add(largestPrimeFactor);
+        n = n.divide(largestPrimeFactor);
+        
+        BigInteger largestFactor = n.divide(findBigSmallestFactor(n));    
+
+        BigInteger i = new BigInteger("2");
+        while (i.compareTo(largestFactor) <= 0) { // for all possible prime factors (2 - largest factor of the number being reduced)
+
+            if (isBigPrime(i) && n.mod(i).equals(BigInteger.ZERO)) { // if this value is prime and the number is divisible by it
+                primes.add(i); // add that prime factor to the list
+                n = n.divide(i); // divide out that prime factor from the number to start reducing the new number
+                largestFactor = largestFactor.divide(i); // divide out that prime factor from the largest factor to get the largest factor of the new number
+                i = new BigInteger("2"); // reset the prime factor test
+            } else {
+                // increment the factor test
+                if (i.equals(new BigInteger("2"))) {
+                    i = i.add(BigInteger.ONE); // increment to the next odd number (3)
+                } else {
+                    i = i.add(new BigInteger("2")); // increment by 2 if the number is already odd because even numbers can be skipped
+                }
+            }
+        }
+        if (!n.equals(BigInteger.ONE)) primes.add(n); // add the last prime number that could not be factored
+        Collections.sort(primes);
+        return primes;
+    }
+}
+

@@ -1,0 +1,52 @@
+package cryptosystem;
+
+import java.math.BigInteger;
+import java.util.Random;
+
+public class RSACryptoSystem {
+	private static BigInteger p, q, N, e, d, inter;
+	private int bitlength = 1024; //Taking 1024 bits as key length to make the RSA difficult to decrypt. 
+	private Random r;
+
+	public RSACryptoSystem() {
+
+		r = new Random();
+		p = BigInteger.probablePrime(bitlength, r); // Generating Random Prime
+													// Numbers of desired bit
+													// length for p
+		q = BigInteger.probablePrime(bitlength, r); // Generating Random Prime
+													// Numbers of desired bit
+													// length for q
+		e = BigInteger.probablePrime(bitlength / 2, r); // choosing a larger e
+														// to make the
+														// factorization during
+														// decryption process to
+														// be hard
+	}
+
+	public RSACryptoSystem(BigInteger p, BigInteger q, BigInteger e) {
+		RSACryptoSystem.p = p;
+		RSACryptoSystem.q = q;
+		RSACryptoSystem.e = e;
+	}
+
+	public BigInteger encryptRSA(BigInteger plainKey) {
+		System.out.println("Encrypting the Plain Key using RSA... ");
+		N = p.multiply(q);
+		inter = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE));
+		while (inter.gcd(e).compareTo(BigInteger.ONE) > 0 && e.compareTo(inter) < 0) {
+			e.add(BigInteger.ONE);
+		}
+		BigInteger encryptedKey = plainKey.modPow(e, N);
+		return encryptedKey;
+	}
+	
+	public BigInteger decryptRSA(BigInteger encryptedKey) {
+		inter = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE));
+		d = e.modInverse(inter);
+		System.out.println("Decrypting the Cipher Key using RSA... ");
+		BigInteger plainKey = encryptedKey.modPow(d, N);
+		System.out.println("The Plain Key after decryption is " + plainKey);
+		return plainKey;
+	}
+}

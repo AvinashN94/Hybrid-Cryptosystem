@@ -1,0 +1,72 @@
+package cryptosystem;
+
+import java.math.BigInteger;
+import java.util.Scanner;
+
+public class MainSystem {
+
+	public static void main(String[] args) {
+		Scanner scanner = new Scanner(System.in);
+		Scanner scanner1 = new Scanner(System.in);
+		Scanner scanner2 = new Scanner(System.in);
+		Scanner scanner3 = new Scanner(System.in);
+		String plainText = new String();
+		cryptosystem.RSACryptoSystem rsa;
+		System.out.println("HYBRID CRYPTOSYSTEM");
+		System.out.println("Encrypting the Public Key using RSA...");
+		System.out.println("Do you wish to enter the values of p, q, e manually ??? (y or n)");
+		String check = scanner.nextLine();
+		if (check.equalsIgnoreCase("y")) {
+			System.out.println("Enter the value of p...");
+			BigInteger p = scanner.nextBigInteger();
+			System.out.println("Enter the value of q...");
+			BigInteger q = scanner.nextBigInteger();
+			System.out.println("Enter the value of e (relatively prime to p & q)...");
+			BigInteger e = scanner.nextBigInteger();
+			rsa = new RSACryptoSystem(p, q, e);
+		} else if (check.equalsIgnoreCase("n")) {
+			System.out.println("The values of p, q, e will be generated automatically...");
+			rsa = new RSACryptoSystem();
+		} else {
+			System.out.println(
+					"Better luck next time...!! Enter proper input next time... Auto-generating the p, q, e...");
+			rsa = new RSACryptoSystem();
+		}
+		System.out.println("Enter the Key that has to encrypted using RSA...");
+		BigInteger plainKey = scanner.nextBigInteger();
+		//Calling the RSACryptosystem's encrypt method with necessary parameters
+		BigInteger encryptedKey = rsa.encryptRSA(plainKey);
+		System.out.println("The Encrypted Key that is sent to the Receiver is ... " + encryptedKey);
+		System.out.println("Do you want to decrypt the Encrypted Key back to Plain Key ??? (y or n)");
+		if (scanner1.hasNextLine()) {
+			String checkAgain = scanner1.nextLine();
+			if (checkAgain.equalsIgnoreCase("y")) {
+				//Calling the RSACryptosystem's decrypt method with necessary parameters
+				BigInteger result = rsa.decryptRSA(encryptedKey);
+			}
+		}
+		System.out.println("Now Encrypting the Plain Text using the AES algorithm... ");
+		System.out.println("Enter the Plain Text that has to be Encrypted... ");
+		if (scanner2.hasNextLine()) {
+			plainText = scanner2.nextLine();
+		}
+		cryptosystem.AESCryptoSystem aes = new AESCryptoSystem();
+		//Calling the AESCryptoSystem's encrypt method with necessary parameters
+		String cipherText = aes.encrypt(plainText, plainKey);
+		System.out.println("The Cipher Text after using AES scheme is ... " + cipherText);
+		System.out.println("Do you wish to Decrypt the Cipher Text back ??? (y or n)");
+		if (scanner3.hasNextLine()) {
+			String yetAnotherCheck = scanner3.nextLine();
+			if (yetAnotherCheck.equalsIgnoreCase("y")) {
+				//Calling the AESCryptoSystem's decrypt method with necessary parameters
+				String decryptedPlainText = aes.decrypt(cipherText, plainKey);
+				System.out.println("The Decrypted Cipher Text is... " + decryptedPlainText);
+			}
+		}
+		System.out.println("Thank you for using the System...");
+		scanner.close();
+		scanner1.close();
+		scanner2.close();
+		scanner3.close();
+	}
+}

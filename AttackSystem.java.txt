@@ -1,0 +1,125 @@
+package cryptoattack;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+import cryptosystem.AESCryptoSystem;
+import cryptosystem.RSACryptoSystem;
+
+public class AttackSystem {
+	
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		Scanner sc1 = new Scanner(System.in);
+		Scanner sc2 = new Scanner(System.in);
+		System.out.println("This is a program to perform an attack on the Hybrid Cryptosystem...");
+		System.out.println("Enter the Decimal value of N (p*q)...");
+		BigInteger n = sc.nextBigInteger();
+		String cipherText = new String();
+		BigInteger plainKey = new BigInteger("0");
+		System.out.println("Enter the Decimal value of e...");
+		BigInteger E = sc.nextBigInteger();
+		int e = E.intValue();
+		System.out.println("Enter the Decimal value of Encrypted Key...");
+		BigInteger encryptedKey = sc1.nextBigInteger();
+		System.out.println("Enter the Decimal value of Encrypted Cipher Text...");
+		if (sc2.hasNextLine()) {
+			cipherText = sc2.nextLine();
+		}
+		sc.close();
+		switch (e) {
+		case 1:
+			plainKey = encryptedKey;
+			break;
+		case 2:
+			plainKey = bigIntSqRootCeil(encryptedKey);
+			break;
+		case 3:
+			plainKey = cbrt(encryptedKey);
+			break;
+		default:
+			ArrayList<BigInteger> result = PrimeFactorization.bigPrimeFactorization(n);
+			BigInteger p = result.get(0);
+			BigInteger q = result.get(1);
+			RSACryptoSystem rsa = new RSACryptoSystem(p, q, E);
+			plainKey = rsa.decryptRSA(encryptedKey);
+			break;
+		}
+		AESCryptoSystem aes = new AESCryptoSystem();
+		System.out.println("The Plain Key after decrypting using RSA is...  "+plainKey);
+		String plainText = aes.decrypt(cipherText, plainKey);
+		System.out.println("The Cracked Plain Text is ... " + plainText);
+		sc.close();
+		sc1.close();
+		sc2.close();
+	}
+	
+	public static BigInteger bigIntSqRootCeil(BigInteger x) throws IllegalArgumentException {
+		if (x.compareTo(BigInteger.ZERO) < 0) {
+			throw new IllegalArgumentException("Negative argument.");
+		}
+
+		if (x == BigInteger.ZERO || x == BigInteger.ONE) {
+			return x;
+		}
+		BigInteger two = BigInteger.valueOf(2L);
+		BigInteger y;
+
+		for (y = x.divide(two); y.compareTo(x.divide(y)) > 0; y = ((x.divide(y)).add(y)).divide(two))
+			;
+		if (x.compareTo(y.multiply(y)) == 0) {
+			return y;
+		} else {
+			return y.add(BigInteger.ONE);
+		}
+	}
+
+	static public BigInteger cbrt(BigInteger val) {
+		return root(3, new BigDecimal(val)).toBigInteger();
+	}
+
+	static private BigDecimal root(final int n, final BigDecimal x) {
+		if (x.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ArithmeticException("negative argument " + x.toString() + " of root");
+		}
+		if (n <= 0) {
+			throw new ArithmeticException("negative power " + n + " of root");
+		}
+		if (n == 1) {
+			return x;
+		}
+
+		BigDecimal s = new BigDecimal(Math.pow(x.doubleValue(), 1.0 / n));
+
+		final BigDecimal nth = new BigDecimal(n);
+
+		final BigDecimal xhighpr = scalePrec(x, 2);
+		MathContext mc = new MathContext(2 + x.precision());
+
+		final double eps = x.ulp().doubleValue() / (2 * n * x.doubleValue());
+		for (;;) {
+			BigDecimal c = xhighpr.divide(s.pow(n - 1), mc);
+			c = s.subtract(c);
+			MathContext locmc = new MathContext(c.precision());
+			c = c.divide(nth, locmc);
+			s = s.subtract(c);
+			if (Math.abs(c.doubleValue() / s.doubleValue()) < eps) {
+				break;
+			}
+		}
+		return s.round(new MathContext(err2prec(eps)));
+	}
+
+	static private BigDecimal scalePrec(final BigDecimal x, int d) {
+		return x.setScale(d + x.scale());
+	}
+
+	static private int err2prec(double xerr) {
+
+		return 1 + (int) (Math.log10(Math.abs(0.5 / xerr)));
+	}
+
+}
